@@ -3,32 +3,42 @@ class Game:
         self.title = title
 
     def results(self):
-        pass
+        return [result for result in Result.all() if result.game == self]
 
     def players(self):
-        pass
+        return list(set([result.player for result in self.results()]))
 
     def average_score(self, player):
-        pass
+        player_results = [result.score for result in self.results() if result.player == player]
+        return sum(player_results) / len(player_results) if player_results else 0
+
 
 class Player:
     def __init__(self, username):
         self.username = username
 
     def results(self):
-        pass
+        return [result for result in Result.all() if result.player == self]
 
     def games_played(self):
-        pass
+        return list(set([result.game for result in self.results()]))
 
     def played_game(self, game):
-        pass
+        return game in self.games_played()
 
     def num_times_played(self, game):
-        pass
+        return sum(1 for result in self.results() if result.game == game)
+
 
 class Result:
+    _all = []
+
     def __init__(self, player, game, score):
         self.player = player
         self.game = game
         self.score = score
+        Result._all.append(self)
+
+    @classmethod
+    def all(cls):
+        return cls._all

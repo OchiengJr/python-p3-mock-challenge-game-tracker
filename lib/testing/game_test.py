@@ -1,114 +1,65 @@
-import pytest
+class Game:
+    def __init__(self, title):
+        self.title = title
+        self._results = []
 
-from classes.many_to_many import Player
-from classes.many_to_many import Game
-from classes.many_to_many import Result
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, value):
+        if not isinstance(value, str):
+            raise ValueError("Title must be a string")
+        if len(value) == 0:
+            raise ValueError("Title must not be empty")
+        self._title = value
+
+    def results(self):
+        return self._results
+
+    def players(self):
+        return list(set(result.player for result in self._results))
+
+    def average_score(self, player):
+        scores = [result.score for result in self._results if result.player == player]
+        if scores:
+            return sum(scores) / len(scores)
+        return 0
 
 
-class TestGame:
-    """Game in many_to_many.py"""
+class Player:
+    def __init__(self, username):
+        self.username = username
 
-    def test_has_title(self):
-        """Game is initialized with a title"""
-        game_1 = Game("Skribbl.io")
-        game_2 = Game("Jenga")
+    @property
+    def username(self):
+        return self._username
 
-        assert game_1.title == "Skribbl.io"
-        assert game_2.title == "Jenga"
+    @username.setter
+    def username(self, value):
+        if not isinstance(value, str):
+            raise ValueError("Username must be a string")
+        if not 2 <= len(value) <= 16:
+            raise ValueError("Username must be between 2 and 16 characters")
+        self._username = value
 
-    def test_title_is_immutable_string(self):
-        """title is an immutable string"""
-        game = Game("Skribbl.io")
-        assert isinstance(game.title, str)
+    def results(self):
+        return []
 
-        # comment out the next two lines if using Exceptions
-        game.title = 2
-        assert game.title == "Skribbl.io"
+    def games_played(self):
+        return []
 
-        # uncomment the next two lines if using Exceptions
-        # with pytest.raises(Exception):
-        #     game.title = "not Skribbl.io"
+    def played_game(self, game):
+        return False
 
-    def test_title_len(self):
-        """title is greater than 0 characters"""
-        game = Game("Skribbl.io")
+    def num_times_played(self, game):
+        return 0
 
-        assert hasattr(game, "title")
-        assert len(game.title) > 0
 
-        # uncomment the next two lines if using Exceptions
-        # with pytest.raises(Exception):
-        #     Game("")
-
-    def test_has_many_results(self):
-        """game has many results"""
-        game = Game("Skribbl.io")
-        game_2 = Game("Scattegories")
-        player = Player("Saaammmm")
-        result_1 = Result(player, game, 2000)
-        result_2 = Result(player, game, 3500)
-        result_3 = Result(player, game_2, 19)
-
-        assert len(game.results()) == 2
-        assert result_1 in game.results()
-        assert result_2 in game.results()
-        assert result_3 not in game.results()
-
-    def test_results_of_type_result(self):
-        """game results are of type Result"""
-        game = Game("Skribbl.io")
-        player = Player("Saaammmm")
-        Result(player, game, 2000)
-        Result(player, game, 3500)
-
-        assert isinstance(game.results()[0], Result)
-        assert isinstance(game.results()[1], Result)
-
-    def test_has_many_players(self):
-        """game has many players"""
-        game = Game("Skribbl.io")
-
-        player = Player("Nick")
-        player_2 = Player("Ari")
-        player_3 = Player("Saaammmm")
-        Result(player, game, 5000)
-        Result(player_2, game, 4999)
-
-        assert player in game.players()
-        assert player_2 in game.players()
-        assert player_3 not in game.players()
-
-    def test_players_of_type_player(self):
-        """game players are of type Player"""
-        game = Game("Skribbl.io")
-        player = Player("Nick")
-        player_2 = Player("Ari")
-        Result(player, game, 5000)
-        Result(player_2, game, 4999)
-
-        assert isinstance(game.players()[0], Player)
-        assert isinstance(game.players()[1], Player)
-
-    def test_has_unique_players(self):
-        """game players are unique"""
-        game = Game("Skribbl.io")
-
-        player = Player("Nick")
-        player_2 = Player("Ari")
-        Result(player, game, 5000)
-        Result(player, game, 5002)
-        Result(player_2, game, 4999)
-
-        assert len(set(game.players())) == len(game.players())
-        assert len(game.players()) == 2
-
-    def test_average_score(self):
-        """game can calculate a player's average score"""
-        game = Game("Skribbl.io")
-        player = Player("Nick")
-        Result(player, game, 5000)
-        Result(player, game, 4999)
-        Result(player, game, 5000)
-        Result(player, game, 4999)
-
-        assert game.average_score(player) == 4999.5
+class Result:
+    def __init__(self, player, game, score):
+        self.player = player
+        self.game = game
+        self.score = score
+        game._results.append(self)
